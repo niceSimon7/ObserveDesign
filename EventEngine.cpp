@@ -1,30 +1,36 @@
-#include "ObserveDesign.h"
+#include "EventEngine.h"
 
-bool MyEvent::operator<(const MyEvent & rhs) const{
-    return mEventId < rhs.mEventId;
-}
+EventEngine* EventEngine::mInstance = NULL;
 
-void EventEngine::Attach(MyEvent pEvent, MyEntity* pEntity){
+void EventEngine::Attach(MyEvent pEvent, MyEntity* pEntity)
+{
     EventListMap::iterator iter = m_map.find(pEvent.mEventId);
     if(iter == m_map.end())
     {
         list<MyEntity* > entityList;
         entityList.push_front(pEntity);
         m_map.insert(EventListMap::value_type(pEvent.mEventId, entityList));
-    }else{
+    }
+    else
+    {
         (iter->second).push_front(pEntity);
     }
 }
 
-void EventEngine::Detach(MyEvent pEvent){
-    if(m_map.empty()){
+void EventEngine::Detach(MyEvent pEvent)
+{
+    if(m_map.empty())
+    {
         return;
     }
     EventListMap::iterator mIter = m_map.find(pEvent.mEventId);
-    if(mIter != m_map.end()){
+    if(mIter != m_map.end())
+    {
         EventListIter lIter = (mIter->second).begin();
-        for(;lIter != (mIter->second).end(); ++lIter){
-            if((*lIter)->getId() == pEvent.mUniqueIndex){
+        for(; lIter != (mIter->second).end(); ++lIter)
+        {
+            if((*lIter)->getId() == pEvent.mUniqueIndex)
+            {
                 (mIter->second).erase(lIter);
                 return ;
             }
@@ -56,28 +62,4 @@ void EventEngine::fire(MyEvent pEvent)
             return;
         }
     }
-}
-
-int main()
-{
-    Hero * h1 = new Hero(1);
-    Hero * h2 = new Hero(2);
-
-    Monster * m1 = new Monster(3);
-    Monster * m2 = new Monster(4);
-
-    LoginEvent l1(Event_Login, h1->getId());
-    LoginEvent l2(Event_Logout, h1->getId());
-    LogoutEvent l3(Event_Login, m1->getId());
-    LogoutEvent l4(Event_Logout, m2->getId());
-
-    h1->subscribe(l1);
-    h1->subscribe(l2);
-    m1->subscribe(l3);
-    m1->subscribe(l4);
-
-    fireEvent(l1);
-    fireEvent(l3);
-
-    return 0;
 }
